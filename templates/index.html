@@ -206,6 +206,19 @@
             font-family: "Open Sans";
             font-size: 16px;
         }
+
+        input{
+            font-size: 24px;
+            background-color: transparent;
+            color: #000000;
+            outline: none;
+            border-top: none;
+            border-left: none;
+            border-right: none;
+            border-bottom: solid #000000 1px;
+            padding: 3px 10px;
+            text-align: center;
+        }
     </style>
 
 </head>
@@ -217,7 +230,7 @@
             <h1>MuseGen</h1>
             <h2>Generate music using Artificial Intelligence, powered by neural networks</h2>
             <button class="transparent_btn" id="openSelection">Select pre-existing music</button>
-            <button class="transparent_btn">Upload your own music</button>
+            <button class="transparent_btn" id="uploadMusic">Upload your own music</button>
         </div>
 
         <div id="selectionScreen" class="modal">
@@ -228,17 +241,29 @@
                     <h1 style="text-align: center; font-family: 'Open Sans'">Music selection</h1>
                 </div>
                 <div class="modal-body">
-                    <h2 style="color: black">Select a music from the following list</h2>
-                    <div class="selectWrapper">
-                        <select class="selectBox">
-                            <option>Beethoven Moonlight Sonata 1st Movement</option>
-                            <option>Mozart Fur Elise</option>
-                            <option>Mozart Alla Turca</option>
-                            <option>Listz La Campanella</option>
+                        <h2 style="color: black">Select a music from the following list</h2>
+                        <div class="selectWrapper" id="music">
+                        <select class="selectBox" id="trainMusic">
+                            <option value="moonlight1">Beethoven Moonlight Sonata 1st Movement</option>
+                            <option value="fur-elise">Mozart Fur Elise</option>
+                            <option value="alla-turca">Mozart Alla Turca</option>
+                            <option value="campanella">Listz La Campanella</option>
                         </select>
-                    </div>
-                    <br>
-                    <button class="transparent_btn_black">Generate</button>
+                        </div>
+                        <h2 style="color: black">Select a network model to generate your music</h2>
+                        <div class="selectWrapper" id="network" style="width:15%">
+                            <select class="selectBox" id="model">
+                                <option value="gru">GRU</option>
+                                <option value="bidir">Bidirectional LSTM</option>
+                            </select>
+                        </div>
+                        <h2 style="color: black">Training length (cycles): </h2>
+                        <input type="text" id="epoch" name="epoch">
+                        <br>
+                        <h2 style="color: black">Output music length (notes): </h2>
+                        <input type="text" id="length" name="length">
+                        <br>
+                        <button type="submit" class="transparent_btn_black" id="existing">Generate</button>
                 </div>
             </div>
         </div>
@@ -267,6 +292,45 @@
               if (event.target === modal) {
                 modal.style.display = "none";
               }
+            }
+
+            var uploadBtn = document.getElementById("uploadMusic");
+            uploadBtn.onclick = function(){
+                alert("Coming soon!")
+            }
+
+            function makeid(length) {
+                var result           = '';
+                var characters       = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789';
+                var charactersLength = characters.length;
+                for ( var i = 0; i < length; i++ ) {
+                  result += characters.charAt(Math.floor(Math.random() *
+             charactersLength));
+               }
+               return result;
+            }
+
+            var genExistingBtn = document.getElementById("existing");
+            genExistingBtn.onclick = function(){
+                var trainMusic = document.getElementById("trainMusic").value;
+                var model = document.getElementById("model").value;
+                var epoch = document.getElementById("epoch").value;
+                var length = document.getElementById("length").value;
+                var task_id = makeid(10);
+
+                if (!isNaN(epoch) && !isNaN(length) && epoch != '' & length != ''){
+                    var theUrl = "/start_task" +
+                "?existing=False&trainMusic=" + trainMusic + "&model=" + model + "&epoch=" + epoch + "&length=" + length
+                    + "&task_id=" + task_id;
+
+                    var xmlHttp2 = new XMLHttpRequest();
+                    xmlHttp2.open("GET", theUrl, true); // true for asynchronous
+                    xmlHttp2.send(null);
+                    window.location.replace("/generate/" + task_id);
+                }
+                else{
+                    alert("Invalid integer input for training length/output length");
+                }
             }
         </script>
     </body>
