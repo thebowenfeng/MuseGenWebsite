@@ -10,6 +10,13 @@
             </Attribute>
           </value>
         </entry>
+        <entry key="\network.py">
+          <value>
+            <Attribute>
+              <option name="separator" value="," />
+            </Attribute>
+          </value>
+        </entry>
         <entry key="\read_midi.py">
           <value>
             <Attribute>
@@ -28,6 +35,13 @@
           <value>
             <Attribute>
               <option name="separator" value=":" />
+            </Attribute>
+          </value>
+        </entry>
+        <entry key="\test.py">
+          <value>
+            <Attribute>
+              <option name="separator" value="," />
             </Attribute>
           </value>
         </entry>

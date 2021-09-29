@@ -1,9 +1,11 @@
+import keras.callbacks
 import numpy as np
 from read_midi import Preprocess
 import tensorflow as tf
 from mido import MidiFile, MidiTrack
 from mido.messages.messages import Message
 from mido import MetaMessage
+import requests
 
 
 SEQ_LEN = 10
@@ -13,6 +15,15 @@ EMBEDDING_DIM = 100
 RNN_UNITS = 1024
 LSTM_UNITS = 150
 TEMPERATURE = 1.0
+
+
+class Callback(keras.callbacks.Callback):
+    def __init__(self, task_id):
+        self.task_id = task_id
+
+    def on_epoch_end(self, epoch, logs=None):
+        requests.get(f"http://3.138.86.8:5000/update_status?task_id={self.task_id}&epoch={epoch}")
+        print(f"End of epoch {epoch} Loss: {logs['loss']} TaskID: {self.task_id}")
 
 
 class RNN_GRU(tf.keras.Model):
@@ -39,10 +50,11 @@ class RNN_GRU(tf.keras.Model):
 
 
 class RNN_Model:
-    def __init__(self, preprocess: Preprocess):
+    def __init__(self, preprocess: Preprocess, task_id):
         self.processed = preprocess
         self.dataset = None
         self.model = None
+        self.task_id = task_id
 
         self.create_dataset()
 
@@ -64,7 +76,7 @@ class RNN_Model:
         loss = tf.losses.SparseCategoricalCrossentropy(from_logits=True)
 
         self.model.compile(optimizer='adam', loss=loss)
-        history = self.model.fit(self.dataset, epochs=epoch)
+        history = self.model.fit(self.dataset, epochs=epoch, callbacks=[Callback(task_id=self.task_id)])
 
     def one_step_gen(self, inputs, states=None):
         predicted, states = self.model(inputs, states=states, return_state=True)
@@ -99,13 +111,14 @@ class RNN_Model:
 
 
 class Bidirectional_Model:
-    def __init__(self, processed: Preprocess):
+    def __init__(self, processed: Preprocess, task_id):
         self.processed = processed
         self.dataset = None
         self.features = None
         self.labels = None
         self.targets = None
         self.model : tf.keras.models.Sequential = None
+        self.task_id = task_id
 
         self.create_dataset()
 
@@ -134,7 +147,7 @@ class Bidirectional_Model:
 
         optimizer = tf.keras.optimizers.Adam(learning_rate=0.01)
         self.model.compile(loss='categorical_crossentropy', optimizer=optimizer, metrics=['accuracy'])
-        history = self.model.fit(self.features, self.targets, epochs=epoch, batch_size=BATCH_SIZE)
+        history = self.model.fit(self.features, self.targets, epochs=epoch, batch_size=BATCH_SIZE, callbacks=[Callback(task_id=self.task_id)])
 
     def generate(self, num_notes, prompt: list, output_file, tempo):
         result = prompt.copy()

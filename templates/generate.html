@@ -111,21 +111,24 @@
         xmlHttp2.onreadystatechange = function() {
             if (xmlHttp2.readyState == 4 && xmlHttp2.status == 200)
                 var resp = xmlHttp2.responseText;
-                console.log(resp);
-                if(resp == "Creating job"){
-                    progText.innerText = resp;
+                var jsonObj = JSON.parse(resp);
+                console.log(jsonObj);
+                if(jsonObj["status"] == "Creating job"){
+                    progText.innerText = jsonObj["status"];
                     bar.animate(0.1);
-                }else if(resp == "Processing"){
-                    progText.innerText = resp;
+                }else if(jsonObj["status"] == "Processing"){
+                    progText.innerText = jsonObj["status"];
                     bar.animate(0.2);
-                }else if(resp == "Training"){
-                    progText.innerText = resp;
-                    bar.animate(0.4);
-                }else if(resp == "Writing"){
-                    progText.innerText = resp;
+                }else if(jsonObj["status"] == "Training"){
+                    progText.innerText = jsonObj["status"] + "( " + jsonObj["epoch"] + "/" + jsonObj["total"] + " )";
+                    var currProg = 0.4 + (0.4 * (parseFloat(jsonObj["epoch"]) / parseFloat(jsonObj["total"])));
+                    console.log(currProg);
+                    bar.animate(currProg);
+                }else if(jsonObj["status"] == "Writing"){
+                    progText.innerText = jsonObj["status"];
                     bar.animate(0.8);
-                }else if(resp == "Success"){
-                    progText.innerText = resp;
+                }else if(jsonObj["status"] == "Success"){
+                    progText.innerText = jsonObj["status"];
                     bar.animate(1.0);
                     downloadBtn.style.display = "inline-block";
                 }

@@ -29,6 +29,8 @@ class Task(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     task_id = db.Column(db.String(100), nullable=False)
     task_status = db.Column(db.String(100), nullable=True)
+    current_epoch = db.Column(db.Integer, nullable=True, default=0)
+    total_epoch = db.Column(db.Integer, nullable=False)
 
 
 @app.route('/', methods=["GET"])
@@ -48,7 +50,7 @@ def start_task():
         # Will be implemented later, for custom music uploads
         task_id, train, model, epoch, length = None, None, None, None, None
 
-    task = Task(task_id=task_id)
+    task = Task(task_id=task_id, total_epoch=int(epoch))
     db.session.add(task)
     db.session.commit()
 
@@ -65,9 +67,9 @@ def start_task():
 
     processed = Preprocess(existing_music[train])
     if model == 'gru':
-        mymodel = RNN_Model(processed)
+        mymodel = RNN_Model(processed, task_id)
     else:
-        mymodel = Bidirectional_Model(processed)
+        mymodel = Bidirectional_Model(processed, task_id)
 
     task.task_status = "Training"
     print("training")
@@ -101,7 +103,23 @@ def get_status():
     if task is None:
         return "none"
     else:
-        return task.task_status
+        if task.task_status == "Training":
+            return {"status": task.task_status, "epoch": task.current_epoch, "total": task.total_epoch}
+        else:
+            return {"status": task.task_status}
+
+
+@app.route("/update_status", methods=['GET'])
+def update_status():
+    task_id = request.args["task_id"]
+    curr_epoch = request.args["epoch"]
+
+    task = Task.query.filter_by(task_id=task_id).first()
+    task.current_epoch = int(curr_epoch)
+
+    db.session.commit()
+
+    return "True"
 
 
 @app.route("/download/<task_id>", methods=["GET"])
