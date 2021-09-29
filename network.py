@@ -22,7 +22,7 @@ class Callback(keras.callbacks.Callback):
         self.task_id = task_id
 
     def on_epoch_end(self, epoch, logs=None):
-        requests.get(f"http://3.138.86.8:5000/update_status?task_id={self.task_id}&epoch={epoch}")
+        requests.get(f"http://3.138.86.8:8080/update_status?task_id={self.task_id}&epoch={epoch}")
         print(f"End of epoch {epoch} Loss: {logs['loss']} TaskID: {self.task_id}")
 
 
