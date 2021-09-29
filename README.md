@@ -1,6 +1,6 @@
 # MuseGenWebsite
 
-Interactive website for [MuseGen](https://github.com/thebowenfeng/MuseGen), which is an AI that can generate music.
+Interactive website for [MuseGen](https://github.com/thebowenfeng/MuseGen), which is an AI that can generate music. [Live website](http://3.138.86.8:8080/) can be found here.
 
 Demo: 
 
